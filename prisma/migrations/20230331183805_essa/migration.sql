@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Posts" ALTER COLUMN "likes" DROP DEFAULT,
+ALTER COLUMN "isApproved" DROP DEFAULT,
+ALTER COLUMN "verifyStatus" DROP DEFAULT;
