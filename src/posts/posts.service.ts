@@ -18,7 +18,6 @@ export class PostsService {
           datetime: postDto.datetime,
           author: postDto.author,
           postId: uuid(),
-          isApproved: false,
           likes: 0,
           verifyStatus: "pending"
         }
