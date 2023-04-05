@@ -11,7 +11,7 @@ export class EventsController {
     return this.eventsService.addEvent(eventDto);
   }
 
-  @Get('/get/:eventId')
+  @Get('/get-single/:eventId')
   getEvent(@Param('eventId') eventId: string) {
     return this.eventsService.getEvent(eventId);
   }
