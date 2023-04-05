@@ -22,6 +22,16 @@ export class PostsService {
           verifyStatus: "pending"
         }
       })
+      const userPosts = await prisma.users.update({
+        where: {
+          userId: post.author
+        },
+        data: {
+          posts: {
+            push: post.postId
+          }
+        }
+      })
       return { postId: post.postId, status: "success" }
     }
     catch (error) {
@@ -56,6 +66,16 @@ export class PostsService {
           datetime: commentDto.datetime,
           postId: commentDto.postId,
           commentId: uuid()
+        }
+      })
+      const postComments = await prisma.posts.update({
+        where: {
+          postId: commentDto.postId
+        },
+        data: {
+          comments: {
+            push: data.commentId
+          }
         }
       })
       return { likedPostId: data.postId, status: "success" }

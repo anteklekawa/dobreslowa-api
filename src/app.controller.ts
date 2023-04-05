@@ -1,12 +1,29 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res } from "@nestjs/common";
 import { AppService } from './app.service';
+import { UserRegisterDto } from "./dtos/user-register.dto";
+import { UserLoginDto } from "./dtos/user-login.dto";
+import { Request, Response } from "express";
 
-@Controller()
+@Controller('')
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  @Post('/register')
+  userRegister(@Body() userRegisterDto: UserRegisterDto){
+    return this.appService.userRegister(userRegisterDto);
+  }
+
+  @Post('/login')
+  async userLogin(@Body() userLoginDto: UserLoginDto, @Res() res: Response) {
+    const user = await this.appService.userLogin(userLoginDto);
+    res.cookie('user', user.user);
+    res.send('Cookie set successfully');
+    return user;
+  }
+
+  @Get('/logout')
+  async userLogout(@Req() req: Request) {
+    const cookieValue = await req.cookies['user'];
+    return this.appService.userLogout(cookieValue.userId);
   }
 }

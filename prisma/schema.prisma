@@ -18,6 +18,8 @@ model Users {
   email       String    @unique
   posts       String[]
   accessToken String?
+  name        String?
+  surname     String?
 }
 
 model Posts {
