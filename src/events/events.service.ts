@@ -26,7 +26,7 @@ export class EventsService {
 
   async getEvent(eventId: string) {
     try {
-      const event = await prisma.events.findUnique({
+      const event = await prisma.events.findFirst({
         where: {
           eventId,
         },
