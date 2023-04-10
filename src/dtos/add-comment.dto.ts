@@ -1,4 +1,4 @@
-import { IsDate, IsNotEmpty, IsUUID, MaxLength, MinLength } from "class-validator";
+import { IsNotEmpty, IsUUID, MaxLength } from "class-validator";
 
 export class AddCommentDto {
   @IsNotEmpty()
@@ -8,10 +8,6 @@ export class AddCommentDto {
   @IsNotEmpty()
   @IsUUID()
   author: string;
-
-  @IsNotEmpty()
-  @IsDate()
-  datetime: Date;
 
   @IsNotEmpty()
   @IsUUID()

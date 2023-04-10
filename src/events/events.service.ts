@@ -16,7 +16,7 @@ export class EventsService {
           longDescription: eventDto.longDescription,
           shortDescription: eventDto.shortDescription,
           title: eventDto.title,
-          datetime: eventDto.datetime
+          datetime: new Date()
         }
       })
       return { event, status: "success"}

@@ -8,10 +8,6 @@ export class CreatePostDto {
   imgUrl?: string;
 
   @IsNotEmpty()
-  @IsDateString()
-  datetime: Date;
-
-  @IsNotEmpty()
   @IsUUID()
   author: string;
 }

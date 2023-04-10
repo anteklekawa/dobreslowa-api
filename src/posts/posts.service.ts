@@ -15,8 +15,8 @@ export class PostsService {
         data: {
           content: postDto.content,
           imgUrl: postDto.imgUrl,
-          datetime: postDto.datetime,
           author: postDto.author,
+          datetime: new Date(),
           postId: uuid(),
           likes: 0,
           verifyStatus: "pending"
@@ -63,8 +63,8 @@ export class PostsService {
         data: {
           content: commentDto.content,
           author: commentDto.author,
-          datetime: commentDto.datetime,
           postId: commentDto.postId,
+          datetime: new Date(),
           commentId: uuid()
         }
       })
