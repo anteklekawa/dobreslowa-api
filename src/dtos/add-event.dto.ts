@@ -1,4 +1,4 @@
-import { IsNotEmpty, MaxLength, MinLength } from "class-validator";
+import { IsDateString, IsNotEmpty, MaxLength, MinLength } from "class-validator";
 
 export class AddEventDto {
   @IsNotEmpty()
@@ -15,6 +15,10 @@ export class AddEventDto {
   @MaxLength(1500)
   @MinLength(10)
   longDescription: string;
+
+  @IsNotEmpty()
+  @IsDateString()
+  datetime: Date;
 
   imgUrls?: string[];
 }

@@ -47,4 +47,5 @@ model Events {
     shortDescription    String
     longDescription     String
     imgUrls     String[]
+    datetime    DateTime
 }

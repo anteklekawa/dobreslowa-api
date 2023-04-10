@@ -15,7 +15,8 @@ export class EventsService {
           imgUrls: eventDto.imgUrls,
           longDescription: eventDto.longDescription,
           shortDescription: eventDto.shortDescription,
-          title: eventDto.title
+          title: eventDto.title,
+          datetime: eventDto.datetime
         }
       })
       return { event, status: "success"}
@@ -35,7 +36,8 @@ export class EventsService {
           imgUrls: true,
           longDescription: true,
           shortDescription: true,
-          title: true
+          title: true,
+          datetime: true
         }
       })
       return { event, status: "success"}
