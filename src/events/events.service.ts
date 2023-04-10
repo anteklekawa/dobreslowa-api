@@ -55,7 +55,8 @@ export class EventsService {
           imgUrls: true,
           longDescription: true,
           shortDescription: true,
-          title: true
+          title: true,
+          datetime: true
         }
       })
       return {events, status: "success"}
