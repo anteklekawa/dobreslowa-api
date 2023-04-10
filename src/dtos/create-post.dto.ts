@@ -1,15 +1,14 @@
-import { IsDate, IsNotEmpty, IsUrl, IsUUID, MaxLength } from "class-validator";
+import { IsDateString, IsNotEmpty, IsUUID, MaxLength } from "class-validator";
 
 export class CreatePostDto {
   @IsNotEmpty()
   @MaxLength(400)
   content: string;
 
-  @IsUrl()
   imgUrl?: string;
 
   @IsNotEmpty()
-  @IsDate()
+  @IsDateString()
   datetime: Date;
 
   @IsNotEmpty()
