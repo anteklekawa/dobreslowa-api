@@ -60,6 +60,18 @@ export class EventsService {
     } catch (error) {
       return { error, status: "error"}
     }
+  }
 
+  async deleteEvent(eventId: string) {
+    try {
+      const deletedEvent = await prisma.events.delete({
+        where: {
+          eventId
+        }
+      })
+      return {deletedEvent, status: "success"}
+    } catch (error) {
+      return { error, status: "error"}
+    }
   }
 }

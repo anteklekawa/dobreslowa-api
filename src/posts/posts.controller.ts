@@ -43,4 +43,19 @@ export class PostsController {
     return this.postsService.getComments(postId);
   }
 
+  @Post('/delete/:postId')
+  deletePost(@Param('postId') postId: string) {
+    return this.postsService.deletePost(postId);
+  }
+
+  @Post('/delete/comment/:commentId')
+  deleteComment(@Param('commentId') commentId: string) {
+    return this.postsService.deleteComment(commentId);
+  }
+
+  @Post('/delete/like/:postId')
+  deleteLike(@Param('postId') postId: string) {
+    return this.postsService.deleteLike(postId);
+  }
+
 }

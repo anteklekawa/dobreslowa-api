@@ -20,4 +20,9 @@ export class EventsController {
   getEvents() {
     return this.eventsService.getEvents();
   }
+
+  @Post('/delete/:eventId')
+  deleteEvent(@Param('eventId') eventId: string) {
+    return this.eventsService.deleteEvent(eventId);
+  }
 }

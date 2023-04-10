@@ -167,4 +167,48 @@ export class PostsService {
     }
   }
 
+  async deletePost(postId: string) {
+    try {
+      const deletedPost = await prisma.posts.delete({
+        where: {
+          postId
+        }
+      })
+      return {deletedPost, status: "success"}
+    } catch (error) {
+      return {error, status: "error"}
+    }
+  }
+
+  async deleteComment(commentId: string) {
+    try {
+      const deletedComment = await prisma.comments.delete({
+        where: {
+          commentId
+        }
+      })
+      return {deletedComment, status: "success"}
+    } catch (error) {
+      return {error, status: "error"}
+    }
+  }
+
+  async deleteLike(postId: string) {
+    try {
+      const unlikedPost = await prisma.posts.update({
+        where: {
+          postId
+        },
+        data: {
+          likes: {
+            decrement: 1
+          }
+        }
+      })
+      return {unlikedPost, status: "success"}
+    } catch (error) {
+      return {error, status: "error"}
+    }
+  }
+
 }
