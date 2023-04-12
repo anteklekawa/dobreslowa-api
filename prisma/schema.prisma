@@ -14,7 +14,7 @@ model Users {
   userId      String   @id @default(uuid())
   username    String
   password    String
-  roles       Int
+  roles       Int[]
   email       String    @unique
   posts       String[]
   accessToken String?
