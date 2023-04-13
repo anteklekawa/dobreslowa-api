@@ -12,7 +12,7 @@ export class AddEventDto {
   shortDescription: string;
 
   @IsNotEmpty()
-  @MaxLength(1500)
+  @MaxLength(6000)
   @MinLength(10)
   longDescription: string;
 
