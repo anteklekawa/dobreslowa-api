@@ -16,8 +16,8 @@ export class AppController {
   @Post('/login')
   async userLogin(@Body() userLoginDto: UserLoginDto, @Res() res: Response) {
     const user = await this.appService.userLogin(userLoginDto);
-    res.cookie('user', user.user, { httpOnly: true, expires: new Date(new Date().getTime() + 7200000) });
-    res.send({ status: "success", user} );
+    res.cookie('user', user.user);
+    res.send({ status: "success", ...user} );
   }
 
   @Get('/logout')
