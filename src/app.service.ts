@@ -97,7 +97,7 @@ export class AppService {
 
       delete user.password;
 
-      return { user: {...user, accessToken }, status: "success"}
+      return { user: {...user, accessToken } }
     }
 
     async userLogout(userId: string) {
