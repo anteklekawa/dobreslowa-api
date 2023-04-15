@@ -9,7 +9,7 @@ async function bootstrap() {
   app.use(cookieParser());
   app.enableCors({
       origin: '*',
-      credentials: false
+      credentials: true
   })
   app.useGlobalPipes(new ValidationPipe());
 
