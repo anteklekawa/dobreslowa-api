@@ -11,19 +11,19 @@ const prisma = new PrismaClient()
 export class AppService {
 
   async userRegister(userRegisterDto: UserRegisterDto) {
-    const isExisting = await prisma.users.findMany({
+    const isUsernameExisting = await prisma.users.findMany({
       where: {
-        OR: [
-          {
-            email: userRegisterDto.email
-          },
-          {
-            username: userRegisterDto.username
-          }
-        ]
+        username: userRegisterDto.username
       }
     })
-    if (isExisting.length > 0) throw new UnauthorizedException('User is already existing!');
+
+    const isEmailExisting = await prisma.users.findMany({
+      where: {
+        email: userRegisterDto.email
+      }
+    })
+    if (isUsernameExisting.length > 0) throw new UnauthorizedException('Username is already taken!');
+    if (isEmailExisting.length > 0) throw new UnauthorizedException('Email is already taken!');
 
     const currPassword = userRegisterDto.password;
     userRegisterDto.password = await bcrypt.hash(currPassword, 10);
