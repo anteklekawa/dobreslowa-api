@@ -115,6 +115,9 @@ export class PostsService {
           verifyStatus: true,
           author: true,
           datetime: true
+        },
+        orderBy: {
+          datetime: 'desc'
         }
       })
       return { posts, status: "success"}
