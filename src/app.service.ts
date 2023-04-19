@@ -96,8 +96,11 @@ export class AppService {
       }, 7200000);
 
       delete user.password;
+      const roles = [];
+      user.roles.map(role => { roles.push(role) });
+      delete user.roles;
 
-      return { user: {...user, accessToken } }
+      return { user: {...user, roles, accessToken} }
     }
 
     async userLogout(userId: string) {
