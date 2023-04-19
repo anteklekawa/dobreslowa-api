@@ -102,7 +102,8 @@ export class PostsService {
 
   async getPosts(verifyStatus: string) {
     try {
-      const posts = await prisma.posts.findMany({
+      const posts = [];
+      const data = await prisma.posts.findMany({
         where: {
           verifyStatus,
         },
@@ -119,6 +120,20 @@ export class PostsService {
         orderBy: {
           datetime: 'desc'
         }
+      })
+      data.map(async post => {
+        const author = await prisma.users.findFirst({
+          where: {
+            userId: post.author
+          },
+          select: {
+            userId: true,
+            username: true,
+            name: true,
+            surname: true
+          }
+        })
+        posts.push({post, author});
       })
       return { posts, status: "success"}
     } catch (error) {
