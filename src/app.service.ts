@@ -33,7 +33,7 @@ export class AppService {
         data: {
           userId: uuid(),
           posts: '',
-          roles: 2001,
+          roles: [2001],
           accessToken: '',
           email: userRegisterDto.email,
           password: userRegisterDto.password,
@@ -96,11 +96,8 @@ export class AppService {
       }, 7200000);
 
       delete user.password;
-      const roles = [];
-      user.roles.map(role => { roles.push(role) });
-      delete user.roles;
 
-      return { user: {...user, roles, accessToken} }
+      return { user: {...user, accessToken} }
     }
 
     async userLogout(userId: string) {
