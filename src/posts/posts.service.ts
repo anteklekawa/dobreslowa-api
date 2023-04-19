@@ -102,7 +102,6 @@ export class PostsService {
 
   async getPosts(verifyStatus: string) {
     try {
-      const posts = [];
       const data = await prisma.posts.findMany({
         where: {
           verifyStatus,
@@ -121,7 +120,7 @@ export class PostsService {
           datetime: 'desc'
         }
       })
-      data.map(async post => {
+      const posts = await Promise.all(data.map(async (post) => {
         const author = await prisma.users.findFirst({
           where: {
             userId: post.author
@@ -132,14 +131,14 @@ export class PostsService {
             name: true,
             surname: true
           }
-        })
-        posts.push({post, author});
-      })
-      return { posts, status: "success"}
+        });
+        delete post.author;
+        return { ...post, author }
+      }));
+      return { posts, status: "success" }
     } catch (error) {
       return { error, status: "error"}
     }
-
   }
 
   async getUserPosts(userId: string) {
