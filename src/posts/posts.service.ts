@@ -78,7 +78,7 @@ export class PostsService {
           }
         }
       })
-      return { likedPostId: data.postId, status: "success" }
+      return { commentedPostId: data.postId, status: "success" }
     } catch (error) {
       return { error, status: "success"}
     }
@@ -118,8 +118,16 @@ export class PostsService {
           surname: true
         }
       });
+
+      const comments = await prisma.comments.findMany({
+        where: {
+          postId
+        }
+      })
+
       delete post.author
-      return { status: "success", post: { ...post, author }}
+      delete post.comments
+      return { status: "success", post: { ...post, author, comments }}
     } catch (error) {
       return { status: "error", error}
     }
