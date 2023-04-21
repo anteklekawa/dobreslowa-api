@@ -107,7 +107,19 @@ export class PostsService {
           postId,
         }
       })
-      return { status: "success", post}
+      const author = await prisma.users.findFirst({
+        where: {
+          userId: post.author
+        },
+        select: {
+          userId: true,
+          username: true,
+          name: true,
+          surname: true
+        }
+      });
+      delete post.author
+      return { status: "success", post: { ...post, author }}
     } catch (error) {
       return { status: "error", error}
     }
