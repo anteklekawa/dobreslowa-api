@@ -43,9 +43,9 @@ export class PostsController {
     return this.postsService.getUserPosts(userId);
   }
 
-  @Get('/get-comments/:postId')
-  getComments(@Param('postId') postId: string) {
-    return this.postsService.getComments(postId);
+  @Post('/get-comments')
+  getComments(@Body() commentIds: string[]) {
+    return this.postsService.getComments(commentIds);
   }
 
   @Post('/delete/:postId')

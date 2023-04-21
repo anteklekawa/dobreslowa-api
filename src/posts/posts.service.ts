@@ -119,15 +119,8 @@ export class PostsService {
         }
       });
 
-      const comments = await prisma.comments.findMany({
-        where: {
-          postId
-        }
-      })
-
       delete post.author
-      delete post.comments
-      return { status: "success", post: { ...post, author, comments }}
+      return { status: "success", post: { ...post, author }}
     } catch (error) {
       return { status: "error", error}
     }
@@ -165,8 +158,13 @@ export class PostsService {
             surname: true
           }
         });
+        const commentsCount = prisma.comments.count({
+          where: {
+            postId: post.postId
+          }
+        })
         delete post.author;
-        return { ...post, author }
+        return { ...post, author, commentsCount }
       }));
       return { posts, status: "success" }
     } catch (error) {
@@ -198,23 +196,36 @@ export class PostsService {
 
   }
 
-  async getComments(postId: string) {
-    try {
-      const comments = await prisma.comments.findMany({
-        where: {
-          postId: postId
-        },
-        select: {
-          commentId: true,
-          author: true,
-          datetime: true,
-          content: true
-        }
-      })
-      return { comments, status: "success"}
-    } catch (error) {
-      return { error, status: "error"}
-    }
+  async getComments(commentIds: any) {
+      const data = commentIds?.commentIds;
+      const comments = await Promise.all(data.map(async (commentId) => {
+        const comment = await prisma.comments.findFirst({
+          where: {
+            commentId
+          },
+          select: {
+            commentId: true,
+            postId: true,
+            author: true,
+            datetime: true,
+            content: true
+          }
+        })
+        const author = await prisma.users.findFirst({
+          where: {
+            userId: comment.author
+          }
+        })
+
+        delete author.password;
+        delete author.email;
+        delete author.roles;
+        delete author.posts;
+        delete author.accessToken;
+
+        return { ...comment, author }
+      }));
+      return { comments, status: "success" }
   }
 
   async deletePost(postId: string) {
