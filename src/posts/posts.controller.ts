@@ -33,6 +33,11 @@ export class PostsController {
     return this.postsService.getPosts(verifyStatus);
   }
 
+  @Get('/get-single/:postId')
+  getPost(@Param('postId') postId: string) {
+    return this.postsService.getPost(postId);
+  }
+
   @Get('/:userId/get')
   getUserPosts(@Param('userId') userId: string) {
     return this.postsService.getUserPosts(userId);

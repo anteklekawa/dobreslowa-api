@@ -100,6 +100,19 @@ export class PostsService {
     }
   }
 
+  async getPost(postId: string) {
+    try {
+      const post = await prisma.posts.findFirst({
+        where: {
+          postId,
+        }
+      })
+      return { status: "success", post}
+    } catch (error) {
+      return { status: "error", error}
+    }
+  }
+
   async getPosts(verifyStatus: string) {
     try {
       const data = await prisma.posts.findMany({
