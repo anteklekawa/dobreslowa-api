@@ -119,8 +119,22 @@ export class PostsService {
         }
       });
 
+      const comments = await prisma.comments.findMany({
+        where: {
+          postId
+        },
+        select: {
+          commentId: true
+        },
+        orderBy: {
+          datetime: "desc"
+        }
+      })
+
       delete post.author
-      return { status: "success", post: { ...post, author }}
+      delete post.comments
+
+      return { status: "success", post: { ...post, author, comments }}
     } catch (error) {
       return { status: "error", error}
     }
@@ -209,6 +223,9 @@ export class PostsService {
             author: true,
             datetime: true,
             content: true
+          },
+          orderBy: {
+            datetime: "desc"
           }
         })
         const author = await prisma.users.findFirst({
