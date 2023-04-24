@@ -119,7 +119,7 @@ export class PostsService {
         }
       });
 
-      const comments = await prisma.comments.findMany({
+      const commentsDb = await prisma.comments.findMany({
         where: {
           postId
         },
@@ -129,6 +129,11 @@ export class PostsService {
         orderBy: {
           datetime: "desc"
         }
+      })
+
+      const comments = [];
+      await commentsDb.forEach( (comment) => {
+        comments.push(comment.commentId);
       })
 
       delete post.author
@@ -172,11 +177,12 @@ export class PostsService {
             surname: true
           }
         });
-        const commentsCount = prisma.comments.count({
+        const commentsCount = await prisma.comments.count({
           where: {
             postId: post.postId
           }
         })
+
         delete post.author;
         return { ...post, author, commentsCount }
       }));
