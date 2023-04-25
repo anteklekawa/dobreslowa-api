@@ -57,6 +57,9 @@ export class EventsService {
           shortDescription: true,
           title: true,
           datetime: true
+        },
+        orderBy: {
+          datetime: "desc"
         }
       })
       return {events, status: "success"}
