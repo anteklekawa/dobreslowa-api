@@ -49,3 +49,9 @@ model Events {
     imgUrls     String[]
     datetime    DateTime
 }
+
+model LikedPosts {
+    likeId  Int @id @default(autoincrement())
+    postId  String
+    userId  String
+}

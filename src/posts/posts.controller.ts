@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Param, Post } from "@nestjs/common";
+import { Body, Controller, Get, Header, Headers, Param, Post, Req, UnauthorizedException } from "@nestjs/common";
 import { PostsService } from "./posts.service";
 import { CreatePostDto } from "../dtos/create-post.dto";
 import { AddCommentDto } from "../dtos/add-comment.dto";
 import { VerifyPostDto } from "../dtos/verify-post.dto";
+import { Request } from "express";
 
 @Controller('posts')
 export class PostsController {
@@ -14,8 +15,10 @@ export class PostsController {
   }
 
   @Post('/add-like')
-  likePost(@Body('postId') postId: string) {
-    return this.postsService.likePost(postId);
+  likePost(@Body('postId') postId: string, @Headers('Access-Token') headers) {
+    if (!headers) throw new UnauthorizedException('There is no access token!')
+    const accessToken = headers.slice(7);
+    return this.postsService.likePost(postId, accessToken);
   }
 
   @Post('/add-comment')
@@ -29,8 +32,10 @@ export class PostsController {
   }
 
   @Get('/get/:verifyStatus')
-  getPosts(@Param('verifyStatus') verifyStatus: string) {
-    return this.postsService.getPosts(verifyStatus);
+  getPosts(@Param('verifyStatus') verifyStatus: string, @Headers('Access-Token') headers) {
+    if (!headers) throw new UnauthorizedException('There is no access token!')
+    const accessToken = headers.slice(7);
+    return this.postsService.getPosts(verifyStatus, accessToken);
   }
 
   @Get('/get-single/:postId')

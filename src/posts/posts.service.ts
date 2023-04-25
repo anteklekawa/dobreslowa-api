@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { CreatePostDto } from "../dtos/create-post.dto";
 import { PrismaClient } from '@prisma/client'
 import { uuid } from 'uuidv4';
@@ -39,19 +39,69 @@ export class PostsService {
     }
   }
 
-  async likePost(postId: string) {
+  async likePost(postId: string, accessToken: string) {
     try {
-      const likedPost = await prisma.posts.update({
+      const user = await prisma.users.findFirst({
         where: {
-          postId: postId
+          accessToken,
         },
-        data: {
-          likes: {
-            increment: 1,
-          }
+        select: {
+          userId: true
         }
       })
-      return { postId: likedPost.postId, status: "success"}
+
+      const isLiked = await prisma.likedPosts.findMany({
+        where: {
+          userId: user.userId,
+          postId,
+        }
+      })
+
+      if (isLiked.length > 0)
+      {
+        await prisma.posts.update({
+          where: {
+            postId
+          },
+          data: {
+            likes: {
+              decrement: 1
+            }
+          }
+        });
+
+        await prisma.likedPosts.deleteMany({
+          where: {
+            userId: user.userId,
+            postId
+          }
+        })
+
+        return { status: "success", liked: false}
+      }
+
+      else
+      {
+        await prisma.likedPosts.create({
+          data: {
+            userId: user.userId,
+            postId
+          }
+        })
+
+        const likedPost = await prisma.posts.update({
+          where: {
+            postId: postId
+          },
+          data: {
+            likes: {
+              increment: 1,
+            }
+          }
+        })
+        return { status: "success", liked: true}
+      }
+
     } catch (error) {
       return { error, status: "error"}
     }
@@ -145,8 +195,26 @@ export class PostsService {
     }
   }
 
-  async getPosts(verifyStatus: string) {
+  async getPosts(verifyStatus: string, accessToken: string) {
     try {
+      const user = await prisma.users.findFirst({
+        where: {
+          accessToken
+        }
+      })
+
+      const userId = user.userId
+
+      const likedPostsData = await prisma.likedPosts.findMany({
+        where: {
+          userId
+        }
+      })
+
+      const likedPosts = likedPostsData.map((post) => {
+        return post.postId
+      })
+
       const data = await prisma.posts.findMany({
         where: {
           verifyStatus,
@@ -165,6 +233,7 @@ export class PostsService {
           datetime: 'desc'
         }
       })
+
       const posts = await Promise.all(data.map(async (post) => {
         const author = await prisma.users.findFirst({
           where: {
@@ -177,14 +246,24 @@ export class PostsService {
             surname: true
           }
         });
+
         const commentsCount = await prisma.comments.count({
           where: {
             postId: post.postId
           }
         })
 
+        let liked = false;
+
+        likedPosts.forEach((postId) => {
+          if (postId == post.postId)
+          {
+            liked = true
+          }
+        })
+
         delete post.author;
-        return { ...post, author, commentsCount }
+        return { ...post, author, commentsCount, liked }
       }));
       return { posts, status: "success" }
     } catch (error) {
@@ -194,6 +273,18 @@ export class PostsService {
 
   async getUserPosts(userId: string) {
     try {
+      const author = await prisma.users.findFirst({
+        where: {
+          userId
+        },
+        select: {
+          userId: true,
+          username: true,
+          name: true,
+          surname: true
+        }
+      })
+
       const userPosts = await prisma.posts.findMany({
         where: {
           author: userId
@@ -207,9 +298,18 @@ export class PostsService {
           verifyStatus: true,
           author: true,
           datetime: true
+        },
+        orderBy: {
+          datetime: "desc"
         }
       })
-      return { userPosts, status: "success"}
+
+      const posts = userPosts.map((post) => {
+        delete post.author;
+        return { ...post, author}
+      })
+
+      return { posts, status: "success"}
     } catch (error) {
       return { error, status: "error"}
     }
