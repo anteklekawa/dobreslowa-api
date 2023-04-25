@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { ForbiddenException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { UserRegisterDto } from "./dtos/user-register.dto";
 import { PrismaClient } from "@prisma/client";
 import { uuid } from "uuidv4";
@@ -95,6 +95,7 @@ export class AppService {
             accessToken: ''
           }
         })
+        throw new ForbiddenException('Access token is expired!');
       }, 7200000);
 
       delete user.password;

@@ -15,7 +15,7 @@ export class PostsController {
   }
 
   @Post('/add-like')
-  likePost(@Body('postId') postId: string, @Headers('Access-Token') headers) {
+  likePost(@Body('postId') postId: string, @Headers('Authorization') headers) {
     if (!headers) throw new UnauthorizedException('There is no access token!')
     const accessToken = headers.slice(7);
     return this.postsService.likePost(postId, accessToken);
@@ -32,7 +32,7 @@ export class PostsController {
   }
 
   @Get('/get/:verifyStatus')
-  getPosts(@Param('verifyStatus') verifyStatus: string, @Headers('Access-Token') headers) {
+  getPosts(@Param('verifyStatus') verifyStatus: string, @Headers('Authorization') headers) {
     if (!headers) throw new UnauthorizedException('There is no access token!')
     const accessToken = headers.slice(7);
     return this.postsService.getPosts(verifyStatus, accessToken);
