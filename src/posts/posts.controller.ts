@@ -10,8 +10,10 @@ export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @Post('/create')
-  createPost(@Body() postDto: CreatePostDto) {
-    return this.postsService.createPost(postDto);
+  createPost(@Body() postDto: CreatePostDto, @Headers('Authorization') headers) {
+    if (!headers) throw new UnauthorizedException('There is no access token!')
+    const accessToken = headers.slice(7);
+    return this.postsService.createPost(postDto, accessToken);
   }
 
   @Post('/add-like')
@@ -22,19 +24,26 @@ export class PostsController {
   }
 
   @Post('/add-comment')
-  addComment(@Body() commentDto: AddCommentDto) {
-    return this.postsService.addComment(commentDto);
+  addComment(@Body() commentDto: AddCommentDto, @Headers('Authorization') headers) {
+    if (!headers) throw new UnauthorizedException('There is no access token!')
+    const accessToken = headers.slice(7);
+    return this.postsService.addComment(commentDto, accessToken);
   }
 
   @Post('/verify')
-  verifyPost(@Body() verifyPostDto: VerifyPostDto) {
-    return this.postsService.verifyPost(verifyPostDto);
+  verifyPost(@Body() verifyPostDto: VerifyPostDto, @Headers('Authorization') headers) {
+    if (!headers) throw new UnauthorizedException('There is no access token!')
+    const accessToken = headers.slice(7);
+    return this.postsService.verifyPost(verifyPostDto, accessToken);
   }
 
   @Get('/get/:verifyStatus')
   getPosts(@Param('verifyStatus') verifyStatus: string, @Headers('Authorization') headers) {
-    if (!headers) throw new UnauthorizedException('There is no access token!')
-    const accessToken = headers.slice(7);
+    let accessToken = "";
+    if (headers)
+    {
+      accessToken = headers.slice(7);
+    }
     return this.postsService.getPosts(verifyStatus, accessToken);
   }
 
@@ -44,8 +53,13 @@ export class PostsController {
   }
 
   @Get('/:userId/get')
-  getUserPosts(@Param('userId') userId: string) {
-    return this.postsService.getUserPosts(userId);
+  getUserPosts(@Param('userId') userId: string, @Headers('Authorization') headers) {
+    let accessToken = ""
+    if (headers)
+    {
+      accessToken = headers.slice(7);
+    }
+    return this.postsService.getUserPosts(userId, accessToken);
   }
 
   @Post('/get-comments')
@@ -54,18 +68,16 @@ export class PostsController {
   }
 
   @Post('/delete/:postId')
-  deletePost(@Param('postId') postId: string) {
-    return this.postsService.deletePost(postId);
+  deletePost(@Param('postId') postId: string, @Headers('Authorization') headers) {
+    if (!headers) throw new UnauthorizedException('There is no access token!')
+    const accessToken = headers.slice(7);
+    return this.postsService.deletePost(postId, accessToken);
   }
 
   @Post('/delete/comment/:commentId')
-  deleteComment(@Param('commentId') commentId: string) {
-    return this.postsService.deleteComment(commentId);
+  deleteComment(@Param('commentId') commentId: string, @Headers('Authorization') headers) {
+    if (!headers) throw new UnauthorizedException('There is no access token!')
+    const accessToken = headers.slice(7);
+    return this.postsService.deleteComment(commentId, accessToken);
   }
-
-  @Post('/delete/like/:postId')
-  deleteLike(@Param('postId') postId: string) {
-    return this.postsService.deleteLike(postId);
-  }
-
 }

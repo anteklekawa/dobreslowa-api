@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from "@nestjs/common";
+import { Body, Controller, Get, Headers, Param, Post, UnauthorizedException } from "@nestjs/common";
 import { EventsService } from "./events.service";
 import { AddEventDto } from "../dtos/add-event.dto";
 
@@ -7,8 +7,10 @@ export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
   @Post('/add')
-  addEvent(@Body() eventDto: AddEventDto) {
-    return this.eventsService.addEvent(eventDto);
+  addEvent(@Body() eventDto: AddEventDto, @Headers('Authorization') headers) {
+    if (!headers) throw new UnauthorizedException('There is no access token!')
+    const accessToken = headers.slice(7);
+    return this.eventsService.addEvent(eventDto, accessToken);
   }
 
   @Get('/get-single/:eventId')
@@ -22,7 +24,9 @@ export class EventsController {
   }
 
   @Post('/delete/:eventId')
-  deleteEvent(@Param('eventId') eventId: string) {
-    return this.eventsService.deleteEvent(eventId);
+  deleteEvent(@Param('eventId') eventId: string, @Headers('Authorization') headers) {
+    if (!headers) throw new UnauthorizedException('There is no access token!')
+    const accessToken = headers.slice(7);
+    return this.eventsService.deleteEvent(eventId, accessToken);
   }
 }

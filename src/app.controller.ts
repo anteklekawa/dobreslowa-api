@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, Res } from "@nestjs/common";
+import { Body, Controller, Get, Headers, Post, Req, Res, UnauthorizedException } from "@nestjs/common";
 import { AppService } from './app.service';
 import { UserRegisterDto } from "./dtos/user-register.dto";
 import { UserLoginDto } from "./dtos/user-login.dto";
@@ -24,5 +24,12 @@ export class AppController {
   async userLogout(@Req() req: Request) {
     const cookieValue = await req.cookies['user'];
     return this.appService.userLogout(cookieValue.userId);
+  }
+
+  @Get('/refresh-token')
+  async refreshToken(@Headers('Authorization') headers) {
+    if (!headers) throw new UnauthorizedException('There is no access token!')
+    const accessToken = headers.slice(7);
+    return this.appService.refreshToken(accessToken);
   }
 }

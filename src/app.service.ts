@@ -77,12 +77,13 @@ export class AppService {
       const stringToHash = uuid().toString() + user.userId + user.username;
       const accessToken = sha256(stringToHash);
 
-      const insertToken = await prisma.users.update({
+      await prisma.users.update({
         where: {
           userId: user.userId,
         },
         data: {
           accessToken,
+          isTokenExpired: false
         }
       });
 
@@ -92,7 +93,7 @@ export class AppService {
             userId: user.userId
           },
           data: {
-            accessToken: ''
+            isTokenExpired: true
           }
         })
         throw new ForbiddenException('Access token is expired!');
@@ -109,9 +110,38 @@ export class AppService {
           userId,
         },
         data: {
-          accessToken: ''
+          isTokenExpired: true
         }
       })
       return { status: "success" }
+    }
+
+    async refreshToken(accessToken: string) {
+      const stringToHash = uuid().toString() + accessToken;
+      const newAccessToken = sha256(stringToHash);
+
+      await prisma.users.updateMany({
+        where: {
+          accessToken
+        },
+        data: {
+          accessToken: newAccessToken,
+          isTokenExpired: false
+        }
+      })
+
+      setTimeout(async () => {
+        await prisma.users.updateMany({
+          where: {
+            accessToken: newAccessToken
+          },
+          data: {
+            isTokenExpired: true
+          }
+        })
+        throw new ForbiddenException('Access token is expired!');
+      }, 7200000);
+
+      return { accessToken: newAccessToken }
     }
 }

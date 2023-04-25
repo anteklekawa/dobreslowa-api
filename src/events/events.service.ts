@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from "@nestjs/common";
 import { PrismaClient } from "@prisma/client";
 import { AddEventDto } from "../dtos/add-event.dto";
 import { uuid } from "uuidv4";
@@ -7,7 +7,24 @@ const prisma = new PrismaClient()
 
 @Injectable()
 export class EventsService {
-  async addEvent(eventDto: AddEventDto) {
+
+  async isExpired(accessToken: string) {
+    const data = await prisma.users.findFirst({
+      where: {
+        accessToken
+      },
+      select: {
+        isTokenExpired: true
+      }
+    })
+
+    if (data.isTokenExpired == true) {
+      throw new ForbiddenException('Access Token is expired!');
+    }
+  }
+
+  async addEvent(eventDto: AddEventDto, accessToken: string) {
+    await this.isExpired(accessToken);
     try {
       const event = await prisma.events.create({
         data: {
@@ -68,7 +85,8 @@ export class EventsService {
     }
   }
 
-  async deleteEvent(eventId: string) {
+  async deleteEvent(eventId: string, accessToken: string) {
+    await this.isExpired(accessToken);
     try {
       const deletedEvent = await prisma.events.delete({
         where: {

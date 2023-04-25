@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { ForbiddenException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { CreatePostDto } from "../dtos/create-post.dto";
 import { PrismaClient } from '@prisma/client'
 import { uuid } from 'uuidv4';
@@ -9,7 +9,24 @@ const prisma = new PrismaClient()
 
 @Injectable()
 export class PostsService {
-  async createPost(postDto: CreatePostDto) {
+
+  async isExpired(accessToken: string) {
+    const data = await prisma.users.findFirst({
+      where: {
+        accessToken
+      },
+      select: {
+        isTokenExpired: true
+      }
+    })
+
+    if (data.isTokenExpired == true) {
+      throw new ForbiddenException('Access Token is expired!');
+    }
+  }
+
+  async createPost(postDto: CreatePostDto, accessToken: string) {
+    await this.isExpired(accessToken);
     try {
       const post = await prisma.posts.create({
         data: {
@@ -40,6 +57,7 @@ export class PostsService {
   }
 
   async likePost(postId: string, accessToken: string) {
+    await this.isExpired(accessToken);
     try {
       const user = await prisma.users.findFirst({
         where: {
@@ -107,7 +125,8 @@ export class PostsService {
     }
   }
 
-  async addComment(commentDto: AddCommentDto) {
+  async addComment(commentDto: AddCommentDto, accessToken: string) {
+    await this.isExpired(accessToken)
     try {
       const data = await prisma.comments.create({
         data: {
@@ -134,7 +153,8 @@ export class PostsService {
     }
   }
 
-  async verifyPost(verifyPostDto: VerifyPostDto) {
+  async verifyPost(verifyPostDto: VerifyPostDto, accessToken: string) {
+    await this.isExpired(accessToken);
     try {
       const post = await prisma.posts.update({
         where: {
@@ -271,8 +291,18 @@ export class PostsService {
     }
   }
 
-  async getUserPosts(userId: string) {
+  async getUserPosts(userId: string, accessToken) {
     try {
+
+      const tokenUser = await prisma.users.findFirst({
+        where: {
+          accessToken
+        },
+        select:  {
+          userId: true
+        }
+      })
+
       const author = await prisma.users.findFirst({
         where: {
           userId
@@ -285,24 +315,52 @@ export class PostsService {
         }
       })
 
-      const userPosts = await prisma.posts.findMany({
-        where: {
-          author: userId
-        },
-        select: {
-          content: true,
-          postId: true,
-          likes: true,
-          imgUrl: true,
-          comments: true,
-          verifyStatus: true,
-          author: true,
-          datetime: true
-        },
-        orderBy: {
-          datetime: "desc"
-        }
-      })
+      let userPosts = [];
+
+      if (author.userId == tokenUser.userId)
+      {
+        userPosts = await prisma.posts.findMany({
+          where: {
+            author: userId
+          },
+          select: {
+            content: true,
+            postId: true,
+            likes: true,
+            imgUrl: true,
+            comments: true,
+            verifyStatus: true,
+            author: true,
+            datetime: true
+          },
+          orderBy: {
+            datetime: "desc"
+          }
+        })
+      }
+
+      else {
+        userPosts = await prisma.posts.findMany({
+          where: {
+            author: userId,
+            verifyStatus: "verified"
+          },
+          select: {
+            content: true,
+            postId: true,
+            likes: true,
+            imgUrl: true,
+            comments: true,
+            verifyStatus: true,
+            author: true,
+            datetime: true
+          },
+          orderBy: {
+            datetime: "desc"
+          }
+        })
+      }
+
 
       const posts = userPosts.map((post) => {
         delete post.author;
@@ -351,7 +409,8 @@ export class PostsService {
       return { comments, status: "success" }
   }
 
-  async deletePost(postId: string) {
+  async deletePost(postId: string, accessToken: string) {
+    await this.isExpired(accessToken);
     try {
       const deletedPost = await prisma.posts.delete({
         where: {
@@ -364,7 +423,8 @@ export class PostsService {
     }
   }
 
-  async deleteComment(commentId: string) {
+  async deleteComment(commentId: string, accessToken: string) {
+    await this.isExpired(accessToken)
     try {
       const deletedComment = await prisma.comments.delete({
         where: {
@@ -376,23 +436,4 @@ export class PostsService {
       return {error, status: "error"}
     }
   }
-
-  async deleteLike(postId: string) {
-    try {
-      const unlikedPost = await prisma.posts.update({
-        where: {
-          postId
-        },
-        data: {
-          likes: {
-            decrement: 1
-          }
-        }
-      })
-      return {unlikedPost, status: "success"}
-    } catch (error) {
-      return {error, status: "error"}
-    }
-  }
-
 }
