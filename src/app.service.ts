@@ -97,7 +97,7 @@ export class AppService {
           }
         })
         throw new ForbiddenException('Access token is expired!');
-      }, 10000);
+      }, 600000);
 
       delete user.password;
 
@@ -140,7 +140,7 @@ export class AppService {
           }
         })
         throw new ForbiddenException('Access token is expired!');
-      }, 10000);
+      }, 600000);
 
       return { accessToken: newAccessToken }
     }
