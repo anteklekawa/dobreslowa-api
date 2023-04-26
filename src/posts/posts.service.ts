@@ -317,11 +317,8 @@ export class PostsService {
 
       let userPosts = [];
 
-      console.log("user: " + author.userId + "\n token: " + tokenUser.userId);
-
       if (author.userId == tokenUser.userId)
       {
-        console.log("all posts");
         userPosts = await prisma.posts.findMany({
           where: {
             author: userId
@@ -343,9 +340,6 @@ export class PostsService {
       }
 
       else {
-
-        console.log("verified posts");
-
         userPosts = await prisma.posts.findMany({
           where: {
             author: userId,
@@ -372,8 +366,6 @@ export class PostsService {
         delete post.author;
         return { ...post, author}
       })
-
-      console.log("posts: \n" + posts);
 
       return { posts, status: "success"}
     } catch (error) {
