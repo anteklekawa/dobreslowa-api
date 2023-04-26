@@ -48,8 +48,13 @@ export class PostsController {
   }
 
   @Get('/get-single/:postId')
-  getPost(@Param('postId') postId: string) {
-    return this.postsService.getPost(postId);
+  getPost(@Param('postId') postId: string, @Headers('Authorization') headers) {
+    let accessToken = ""
+    if (headers)
+    {
+      accessToken = headers.slice(7);
+    }
+    return this.postsService.getPost(postId, accessToken);
   }
 
   @Get('/:userId/get')

@@ -170,8 +170,19 @@ export class PostsService {
     }
   }
 
-  async getPost(postId: string) {
+  async getPost(postId: string, accessToken: string) {
     try {
+      const user = await prisma.users.findFirst({
+        where: {
+          accessToken
+        },
+        select: {
+          userId: true
+        }
+      })
+
+      const userId = user.userId;
+
       const post = await prisma.posts.findFirst({
         where: {
           postId,
@@ -201,6 +212,20 @@ export class PostsService {
         }
       })
 
+      const likeData = await prisma.likedPosts.findMany({
+        where: {
+          userId,
+          postId
+        }
+      })
+
+      let liked = false;
+
+      if (likeData.length > 0)
+      {
+        liked = true
+      }
+
       const comments = [];
       await commentsDb.forEach( (comment) => {
         comments.push(comment.commentId);
@@ -209,7 +234,7 @@ export class PostsService {
       delete post.author
       delete post.comments
 
-      return { status: "success", post: { ...post, author, comments }}
+      return { status: "success", post: { ...post, author, comments, liked }}
     } catch (error) {
       return { status: "error", error}
     }
@@ -395,14 +420,14 @@ export class PostsService {
         const author = await prisma.users.findFirst({
           where: {
             userId: comment.author
+          },
+          select: {
+            userId: true,
+            username: true,
+            name: true,
+            surname: true
           }
         })
-
-        delete author.password;
-        delete author.email;
-        delete author.roles;
-        delete author.posts;
-        delete author.accessToken;
 
         return { ...comment, author }
       }));
