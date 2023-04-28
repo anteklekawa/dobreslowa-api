@@ -10,6 +10,36 @@ const prisma = new PrismaClient()
 @Injectable()
 export class PostsService {
 
+  async checkIfUser(userId: string) {
+    const userRoles = await prisma.users.findUnique({
+      where: {
+        userId
+      },
+      select: {
+        roles: true
+      }
+    })
+
+    const isUser = userRoles.roles.find((role) => role === 2001);
+
+    return isUser > 0;
+  }
+
+  async checkIfDev(userId: string) {
+    const userRoles = await prisma.users.findUnique({
+      where: {
+        userId
+      },
+      select: {
+        roles: true
+      }
+    })
+
+    const isUser = userRoles.roles.find((role) => role === 2137);
+
+    return isUser > 0;
+  }
+
   async isExpired(accessToken: string) {
     const data = await prisma.users.findFirst({
       where: {
@@ -154,20 +184,33 @@ export class PostsService {
   }
 
   async verifyPost(verifyPostDto: VerifyPostDto, accessToken: string) {
-    await this.isExpired(accessToken);
-    try {
-      const post = await prisma.posts.update({
-        where: {
-          postId: verifyPostDto.postId
-        },
-        data: {
-          verifyStatus: verifyPostDto.verifyStatus
-        }
-      })
-      return { verifiedPostId: post.postId, status: "success"}
-    } catch (error) {
-      return { error, status: "error"}
+    const user = await prisma.users.findFirst({
+      where: {
+        accessToken
+      },
+      select: {
+        userId: true
+      }
+    })
+
+    if (await this.checkIfDev(user.userId) == false) {
+      throw new UnauthorizedException('Your account does not have required roles to execute this action')
     }
+
+      await this.isExpired(accessToken);
+      try {
+        const post = await prisma.posts.update({
+          where: {
+            postId: verifyPostDto.postId
+          },
+          data: {
+            verifyStatus: verifyPostDto.verifyStatus
+          }
+        })
+        return { verifiedPostId: post.postId, status: "success"}
+      } catch (error) {
+        return { error, status: "error"}
+      }
   }
 
   async getPost(postId: string, accessToken: string) {

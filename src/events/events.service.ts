@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from "@nestjs/common";
+import { ForbiddenException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { PrismaClient } from "@prisma/client";
 import { AddEventDto } from "../dtos/add-event.dto";
 import { uuid } from "uuidv4";
@@ -7,6 +7,36 @@ const prisma = new PrismaClient()
 
 @Injectable()
 export class EventsService {
+
+  async checkIfUser(userId: string) {
+    const userRoles = await prisma.users.findUnique({
+      where: {
+        userId
+      },
+      select: {
+        roles: true
+      }
+    })
+
+    const isUser = userRoles.roles.find((role) => role === 2001);
+
+    return isUser > 0;
+  }
+
+  async checkIfDev(userId: string) {
+    const userRoles = await prisma.users.findUnique({
+      where: {
+        userId
+      },
+      select: {
+        roles: true
+      }
+    })
+
+    const isUser = userRoles.roles.find((role) => role === 2137);
+
+    return isUser > 0;
+  }
 
   async isExpired(accessToken: string) {
     const data = await prisma.users.findFirst({
@@ -24,6 +54,18 @@ export class EventsService {
   }
 
   async addEvent(eventDto: AddEventDto, accessToken: string) {
+    const user = await prisma.users.findFirst({
+      where: {
+        accessToken
+      },
+      select: {
+        userId: true
+      }
+    })
+    if (await this.checkIfDev(user.userId) == false) {
+      throw new UnauthorizedException('Your account does not have required roles to execute this action')
+    }
+
     await this.isExpired(accessToken);
     try {
       const event = await prisma.events.create({
@@ -86,6 +128,18 @@ export class EventsService {
   }
 
   async deleteEvent(eventId: string, accessToken: string) {
+    const user = await prisma.users.findFirst({
+      where: {
+        accessToken
+      },
+      select: {
+        userId: true
+      }
+    })
+    if (await this.checkIfDev(user.userId) == false) {
+      throw new UnauthorizedException('Your account does not have required roles to execute this action')
+    }
+
     await this.isExpired(accessToken);
     try {
       const deletedEvent = await prisma.events.delete({

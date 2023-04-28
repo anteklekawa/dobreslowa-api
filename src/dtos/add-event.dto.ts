@@ -7,7 +7,7 @@ export class AddEventDto {
   title: string;
 
   @IsNotEmpty()
-  @MaxLength(250)
+  @MaxLength(300)
   @MinLength(8)
   shortDescription: string;
 
