@@ -431,9 +431,24 @@ export class PostsService {
         })
       }
 
-      const posts = userPosts.map((post) => {
+      const posts = userPosts.map(async (post) => {
         delete post.author;
-        return { ...post, author}
+
+        const isLiked = await prisma.likedPosts.findMany({
+          where: {
+            userId: tokenUser.userId,
+            postId: post.postId
+          },
+        })
+
+        let liked = false;
+
+        if (isLiked.length > 0)
+        {
+          liked = true
+        }
+
+        return { ...post, author, liked}
       })
 
       return { posts, status: "success", user}
