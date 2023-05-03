@@ -383,6 +383,8 @@ export class PostsService {
         }
       })
 
+      const user = {username: author.username, name: author.name, surname: author.surname}
+
       let userPosts = [];
 
       if (author.userId == tokenUser.userId)
@@ -429,13 +431,12 @@ export class PostsService {
         })
       }
 
-
       const posts = userPosts.map((post) => {
         delete post.author;
         return { ...post, author}
       })
 
-      return { posts, status: "success"}
+      return { posts, status: "success", user}
     } catch (error) {
       return { error, status: "error"}
     }
