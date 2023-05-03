@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
 import { ValidationPipe } from "@nestjs/common";
-import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import { DocumentBuilder, SwaggerDocumentOptions, SwaggerModule } from "@nestjs/swagger";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -14,9 +14,6 @@ async function bootstrap() {
     .addTag('')
     .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
-
   app.setGlobalPrefix('api');
   app.use(cookieParser());
   app.enableCors({
@@ -24,6 +21,14 @@ async function bootstrap() {
       credentials: true
   })
   app.useGlobalPipes(new ValidationPipe());
+
+
+  const options: SwaggerDocumentOptions = {
+    ignoreGlobalPrefix: false,
+    deepScanRoutes: true,
+  };
+  const document = SwaggerModule.createDocument(app, config, options);
+  SwaggerModule.setup('api', app, document);
 
   await app.listen(1337);
 }
