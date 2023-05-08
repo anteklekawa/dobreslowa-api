@@ -77,25 +77,25 @@ export class EventsService {
         userId: true
       }
     })
-    if (await this.checkIfDev(user.userId) == false || await this.checkIfAdmin(user.userId) == false) {
+    if (await this.checkIfDev(user.userId) == true || await this.checkIfAdmin(user.userId) == true) {
+      await this.isExpired(accessToken);
+      try {
+        const event = await prisma.events.create({
+          data: {
+            eventId: uuid(),
+            imgUrls: eventDto.imgUrls,
+            longDescription: eventDto.longDescription,
+            shortDescription: eventDto.shortDescription,
+            title: eventDto.title,
+            datetime: new Date()
+          }
+        })
+        return { event, status: "success"}
+      } catch (error) {
+        return { error, status: "error"}
+      }
+    } else {
       throw new UnauthorizedException('Your account does not have required roles to execute this action')
-    }
-
-    await this.isExpired(accessToken);
-    try {
-      const event = await prisma.events.create({
-        data: {
-          eventId: uuid(),
-          imgUrls: eventDto.imgUrls,
-          longDescription: eventDto.longDescription,
-          shortDescription: eventDto.shortDescription,
-          title: eventDto.title,
-          datetime: new Date()
-        }
-      })
-      return { event, status: "success"}
-    } catch (error) {
-      return { error, status: "error"}
     }
   }
 
@@ -151,20 +151,20 @@ export class EventsService {
         userId: true
       }
     })
-    if (await this.checkIfDev(user.userId) == false || await this.checkIfAdmin(user.userId) == false) {
+    if (await this.checkIfDev(user.userId) == true || await this.checkIfAdmin(user.userId) == true) {
+      await this.isExpired(accessToken);
+      try {
+        const deletedEvent = await prisma.events.delete({
+          where: {
+            eventId
+          }
+        })
+        return {deletedEvent, status: "success"}
+      } catch (error) {
+        return { error, status: "error"}
+      }
+    } else {
       throw new UnauthorizedException('Your account does not have required roles to execute this action')
-    }
-
-    await this.isExpired(accessToken);
-    try {
-      const deletedEvent = await prisma.events.delete({
-        where: {
-          eventId
-        }
-      })
-      return {deletedEvent, status: "success"}
-    } catch (error) {
-      return { error, status: "error"}
     }
   }
 }
