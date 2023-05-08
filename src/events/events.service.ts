@@ -38,6 +38,21 @@ export class EventsService {
     return isUser > 0;
   }
 
+  async checkIfAdmin(userId: string) {
+    const userRoles = await prisma.users.findUnique({
+      where: {
+        userId
+      },
+      select: {
+        roles: true
+      }
+    })
+
+    const isUser = userRoles.roles.find((role) => role === 4832);
+
+    return isUser > 0;
+  }
+
   async isExpired(accessToken: string) {
     const data = await prisma.users.findFirst({
       where: {
@@ -62,7 +77,7 @@ export class EventsService {
         userId: true
       }
     })
-    if (await this.checkIfDev(user.userId) == false) {
+    if (await this.checkIfDev(user.userId) == false || await this.checkIfAdmin(user.userId) == false) {
       throw new UnauthorizedException('Your account does not have required roles to execute this action')
     }
 
@@ -136,7 +151,7 @@ export class EventsService {
         userId: true
       }
     })
-    if (await this.checkIfDev(user.userId) == false) {
+    if (await this.checkIfDev(user.userId) == false || await this.checkIfAdmin(user.userId) == false) {
       throw new UnauthorizedException('Your account does not have required roles to execute this action')
     }
 
