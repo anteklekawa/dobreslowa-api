@@ -431,7 +431,7 @@ export class PostsService {
         })
       }
 
-      const posts = userPosts.map(async (post) => {
+      const posts = Promise.all(userPosts.map(async (post) => {
         delete post.author;
 
         const isLiked = await prisma.likedPosts.findMany({
@@ -449,7 +449,7 @@ export class PostsService {
         }
 
         return { ...post, author, liked}
-      })
+      }));
 
       return { posts, status: "success", user}
     } catch (error) {
