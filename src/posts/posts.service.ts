@@ -283,7 +283,7 @@ export class PostsService {
     }
   }
 
-  async getPosts(verifyStatus: string, accessToken: string) {
+  async getPosts(verifyStatus: string, accessToken: string, sort: string) {
     try {
       const user = await prisma.users.findFirst({
         where: {
@@ -303,24 +303,49 @@ export class PostsService {
         return post.postId
       })
 
-      const data = await prisma.posts.findMany({
-        where: {
-          verifyStatus,
-        },
-        select: {
-          content: true,
-          postId: true,
-          likes: true,
-          imgUrl: true,
-          comments: true,
-          verifyStatus: true,
-          author: true,
-          datetime: true
-        },
-        orderBy: {
-          datetime: 'desc'
-        }
-      })
+      let data = [];
+
+      if (sort == "likes")
+      {
+        data = await prisma.posts.findMany({
+          where: {
+            verifyStatus,
+          },
+          select: {
+            content: true,
+            postId: true,
+            likes: true,
+            imgUrl: true,
+            comments: true,
+            verifyStatus: true,
+            author: true,
+            datetime: true
+          },
+          orderBy: {
+            likes: 'desc'
+          }
+        })
+      } else {
+        data = await prisma.posts.findMany({
+          where: {
+            verifyStatus,
+          },
+          select: {
+            content: true,
+            postId: true,
+            likes: true,
+            imgUrl: true,
+            comments: true,
+            verifyStatus: true,
+            author: true,
+            datetime: true
+          },
+          orderBy: {
+            datetime: 'desc'
+          }
+        })
+      }
+
 
       const posts = await Promise.all(data.map(async (post) => {
         const author = await prisma.users.findFirst({

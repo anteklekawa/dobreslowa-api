@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Header, Headers, Param, Post, Req, UnauthorizedException } from "@nestjs/common";
+import { Body, Controller, Get, Header, Headers, Param, Post, Query, Req, UnauthorizedException } from "@nestjs/common";
 import { PostsService } from "./posts.service";
 import { CreatePostDto } from "../dtos/create-post.dto";
 import { AddCommentDto } from "../dtos/add-comment.dto";
@@ -38,13 +38,13 @@ export class PostsController {
   }
 
   @Get('/get/:verifyStatus')
-  getPosts(@Param('verifyStatus') verifyStatus: string, @Headers('Authorization') headers) {
+  getPosts(@Param('verifyStatus') verifyStatus: string, @Headers('Authorization') headers, @Query('sort') sort: string) {
     let accessToken = "";
     if (headers)
     {
       accessToken = headers.slice(7);
     }
-    return this.postsService.getPosts(verifyStatus, accessToken);
+    return this.postsService.getPosts(verifyStatus, accessToken, sort);
   }
 
   @Get('/get-single/:postId')
