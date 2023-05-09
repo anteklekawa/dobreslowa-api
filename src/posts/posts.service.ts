@@ -305,10 +305,16 @@ export class PostsService {
           accessToken
         }
       })
-
       const userId = user.userId
 
-      if (await this.checkIfVerifier(userId) == true || await this.checkIfDev(userId) == true) {
+      if (verifyStatus == 'pending' || verifyStatus == 'declined') {
+        let havePermission = false;
+        if (await this.checkIfDev(userId) == true || await this.checkIfVerifier(userId) == true) { havePermission = true }
+        if (havePermission == false) {
+          throw new UnauthorizedException('Your account does not have required roles to execute this action')
+        }
+      }
+
         const likedPostsData = await prisma.likedPosts.findMany({
           where: {
             userId
@@ -395,9 +401,6 @@ export class PostsService {
           return { ...post, author, commentsCount, liked }
         }));
         return { posts, status: "success" }
-      } else {
-        throw new UnauthorizedException('Your account does not have required roles to execute this action')
-      }
   }
 
   async getUserPosts(userId: string, accessToken) {
