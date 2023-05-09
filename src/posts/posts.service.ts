@@ -10,7 +10,7 @@ const prisma = new PrismaClient()
 @Injectable()
 export class PostsService {
 
-  async checkIfUser(userId: string) {
+  async checkIfAdmin(userId: string) {
     const userRoles = await prisma.users.findUnique({
       where: {
         userId
@@ -20,7 +20,22 @@ export class PostsService {
       }
     })
 
-    const isUser = userRoles.roles.find((role) => role === 2001);
+    const isUser = userRoles.roles.find((role) => role === 4832);
+
+    return isUser > 0;
+  }
+
+  async checkIfVerifier(userId: string) {
+    const userRoles = await prisma.users.findUnique({
+      where: {
+        userId
+      },
+      select: {
+        roles: true
+      }
+    })
+
+    const isUser = userRoles.roles.find((role) => role === 3210);
 
     return isUser > 0;
   }
@@ -193,10 +208,7 @@ export class PostsService {
       }
     })
 
-    if (await this.checkIfDev(user.userId) == false) {
-      throw new UnauthorizedException('Your account does not have required roles to execute this action')
-    }
-
+    if (await this.checkIfDev(user.userId) == true || await this.checkIfAdmin(user.userId) == true || await this.checkIfVerifier(user.userId) == true) {
       await this.isExpired(accessToken);
       try {
         const post = await prisma.posts.update({
@@ -211,6 +223,9 @@ export class PostsService {
       } catch (error) {
         return { error, status: "error"}
       }
+    } else {
+      throw new UnauthorizedException('Your account does not have required roles to execute this action')
+    }
   }
 
   async getPost(postId: string, accessToken: string) {
