@@ -431,7 +431,7 @@ export class PostsService {
         })
       }
 
-      const posts = Promise.all(userPosts.map(async (post) => {
+      const posts = await Promise.all(userPosts.map(async (post) => {
         delete post.author;
 
         const isLiked = await prisma.likedPosts.findMany({
