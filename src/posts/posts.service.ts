@@ -299,7 +299,7 @@ export class PostsService {
   }
 
   async getPosts(verifyStatus: string, accessToken: string, sort: string) {
-    try {
+
       const user = await prisma.users.findFirst({
         where: {
           accessToken
@@ -308,95 +308,96 @@ export class PostsService {
 
       const userId = user.userId
 
-      const likedPostsData = await prisma.likedPosts.findMany({
-        where: {
-          userId
+      if (await this.checkIfVerifier(userId) == true || await this.checkIfDev(userId) == true) {
+        const likedPostsData = await prisma.likedPosts.findMany({
+          where: {
+            userId
+          }
+        })
+
+        const likedPosts = likedPostsData.map((post) => {
+          return post.postId
+        })
+
+        let data = [];
+
+        if (sort == "likes")
+        {
+          data = await prisma.posts.findMany({
+            where: {
+              verifyStatus,
+            },
+            select: {
+              content: true,
+              postId: true,
+              likes: true,
+              imgUrl: true,
+              comments: true,
+              verifyStatus: true,
+              author: true,
+              datetime: true
+            },
+            orderBy: {
+              likes: 'desc'
+            }
+          })
+        } else {
+          data = await prisma.posts.findMany({
+            where: {
+              verifyStatus,
+            },
+            select: {
+              content: true,
+              postId: true,
+              likes: true,
+              imgUrl: true,
+              comments: true,
+              verifyStatus: true,
+              author: true,
+              datetime: true
+            },
+            orderBy: {
+              datetime: 'desc'
+            }
+          })
         }
-      })
 
-      const likedPosts = likedPostsData.map((post) => {
-        return post.postId
-      })
 
-      let data = [];
+        const posts = await Promise.all(data.map(async (post) => {
+          const author = await prisma.users.findFirst({
+            where: {
+              userId: post.author
+            },
+            select: {
+              userId: true,
+              username: true,
+              name: true,
+              surname: true
+            }
+          });
 
-      if (sort == "likes")
-      {
-        data = await prisma.posts.findMany({
-          where: {
-            verifyStatus,
-          },
-          select: {
-            content: true,
-            postId: true,
-            likes: true,
-            imgUrl: true,
-            comments: true,
-            verifyStatus: true,
-            author: true,
-            datetime: true
-          },
-          orderBy: {
-            likes: 'desc'
-          }
-        })
+          const commentsCount = await prisma.comments.count({
+            where: {
+              postId: post.postId
+            }
+          })
+
+          let liked = false;
+
+          likedPosts.forEach((postId) => {
+            if (postId == post.postId)
+            {
+              liked = true
+            }
+          })
+
+          delete post.author;
+          return { ...post, author, commentsCount, liked }
+        }));
+        return { posts, status: "success" }
       } else {
-        data = await prisma.posts.findMany({
-          where: {
-            verifyStatus,
-          },
-          select: {
-            content: true,
-            postId: true,
-            likes: true,
-            imgUrl: true,
-            comments: true,
-            verifyStatus: true,
-            author: true,
-            datetime: true
-          },
-          orderBy: {
-            datetime: 'desc'
-          }
-        })
+        throw new UnauthorizedException('Your account does not have required roles to execute this action')
       }
-
-
-      const posts = await Promise.all(data.map(async (post) => {
-        const author = await prisma.users.findFirst({
-          where: {
-            userId: post.author
-          },
-          select: {
-            userId: true,
-            username: true,
-            name: true,
-            surname: true
-          }
-        });
-
-        const commentsCount = await prisma.comments.count({
-          where: {
-            postId: post.postId
-          }
-        })
-
-        let liked = false;
-
-        likedPosts.forEach((postId) => {
-          if (postId == post.postId)
-          {
-            liked = true
-          }
-        })
-
-        delete post.author;
-        return { ...post, author, commentsCount, liked }
-      }));
-      return { posts, status: "success" }
-    } catch (error) {
-      return { error, status: "error"}
-    }
   }
 
   async getUserPosts(userId: string, accessToken) {
