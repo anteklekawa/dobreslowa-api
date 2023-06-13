@@ -4,6 +4,7 @@ import { CreatePostDto } from "../dtos/create-post.dto";
 import { AddCommentDto } from "../dtos/add-comment.dto";
 import { VerifyPostDto } from "../dtos/verify-post.dto";
 import { Request } from "express";
+import { VerifyCommentDto } from "../dtos/verify-comment.dto";
 
 @Controller('posts')
 export class PostsController {
@@ -37,6 +38,13 @@ export class PostsController {
     return this.postsService.verifyPost(verifyPostDto, accessToken);
   }
 
+  @Post('/verify-comment')
+  verifyComment(@Body() verifyCommentDto: VerifyCommentDto, @Headers('Authorization') headers) {
+    if (!headers) throw new UnauthorizedException('There is no access token!')
+    const accessToken = headers.slice(7);
+    return this.postsService.verifyComment(verifyCommentDto, accessToken);
+  }
+
   @Get('/get/:verifyStatus')
   getPosts(@Param('verifyStatus') verifyStatus: string, @Headers('Authorization') headers, @Query('sort') sort: string) {
     let accessToken = "";
@@ -67,9 +75,14 @@ export class PostsController {
     return this.postsService.getUserPosts(userId, accessToken);
   }
 
-  @Post('/get-comments')
-  getComments(@Body() commentIds: string[]) {
-    return this.postsService.getComments(commentIds);
+  @Get('/get-comments/:verifyStatus')
+  getComments(@Param('verifyStatus') verifyStatus: string, @Headers('Authorization') headers, @Query('sort') sort: string, @Body() commentIds: string[]) {
+    let accessToken = "";
+    if (headers)
+    {
+      accessToken = headers.slice(7);
+    }
+    return this.postsService.getComments(verifyStatus, accessToken, commentIds);
   }
 
   @Post('/delete/:postId')

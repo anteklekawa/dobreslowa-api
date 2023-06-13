@@ -4,6 +4,7 @@ import { PrismaClient } from '@prisma/client'
 import { uuid } from 'uuidv4';
 import { AddCommentDto } from "../dtos/add-comment.dto";
 import { VerifyPostDto } from "../dtos/verify-post.dto";
+import { VerifyCommentDto } from "../dtos/verify-comment.dto";
 
 const prisma = new PrismaClient()
 
@@ -228,6 +229,36 @@ export class PostsService {
     }
   }
 
+  async verifyComment(verifyCommentDto: VerifyCommentDto, accessToken: string) {
+    const user = await prisma.users.findFirst({
+      where: {
+        accessToken
+      },
+      select: {
+        userId: true
+      }
+    })
+
+    if (await this.checkIfDev(user.userId) == true || await this.checkIfAdmin(user.userId) == true || await this.checkIfVerifier(user.userId) == true) {
+      await this.isExpired(accessToken);
+      try {
+        const comment = await prisma.comments.update({
+          where: {
+            commentId: verifyCommentDto.commentId
+          },
+          data: {
+            verifyStatus: verifyCommentDto.verifyStatus
+          }
+        })
+        return { verifiedPostId: comment.commentId, status: "success"}
+      } catch (error) {
+        return { error, status: "error"}
+      }
+    } else {
+      throw new UnauthorizedException('Your account does not have required roles to execute this action')
+    }
+  }
+
   async getPost(postId: string, accessToken: string) {
     try {
       const user = await prisma.users.findFirst({
@@ -299,7 +330,6 @@ export class PostsService {
   }
 
   async getPosts(verifyStatus: string, accessToken: string, sort: string) {
-
       const user = await prisma.users.findFirst({
         where: {
           accessToken
@@ -502,24 +532,42 @@ export class PostsService {
 
   }
 
-  async getComments(commentIds: any) {
-      const data = commentIds?.commentIds;
-      const comments = await Promise.all(data.map(async (commentId) => {
-        const comment = await prisma.comments.findFirst({
-          where: {
-            commentId
-          },
-          select: {
-            commentId: true,
-            postId: true,
-            author: true,
-            datetime: true,
-            content: true
-          },
-          orderBy: {
-            datetime: "desc"
-          }
-        })
+  async getComments(verifyStatus: string, accessToken: string, commentIds: any) {
+    const user = await prisma.users.findFirst({
+      where: {
+        accessToken
+      }
+    })
+    const userId = user.userId
+
+    if (verifyStatus == 'pending' || verifyStatus == 'declined') {
+      let havePermission = false;
+      if (await this.checkIfDev(userId) == true || await this.checkIfVerifier(userId) == true) { havePermission = true }
+      if (havePermission == false) {
+        throw new UnauthorizedException('Your account does not have required roles to execute this action')
+      }
+    }
+
+    const data = commentIds?.commentIds;
+    const comments = await Promise.all(data.map(async (commentId) => {
+      const comment = await prisma.comments.findFirst({
+        where: {
+          commentId,
+          verifyStatus
+        },
+        select: {
+          commentId: true,
+          postId: true,
+          author: true,
+          datetime: true,
+          content: true,
+          verifyStatus: true
+        },
+        orderBy: {
+          datetime: "desc"
+        }
+      })
+      if (!comment) {return null}
         const author = await prisma.users.findFirst({
           where: {
             userId: comment.author
@@ -532,9 +580,11 @@ export class PostsService {
           }
         })
 
-        return { ...comment, author }
-      }));
-      return { comments, status: "success" }
+
+
+      return { ...comment, author}
+    }));
+    return { comments, status: "success" }
   }
 
   async deletePost(postId: string, accessToken: string) {
