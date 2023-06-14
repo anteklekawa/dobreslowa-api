@@ -75,7 +75,7 @@ export class PostsController {
     return this.postsService.getUserPosts(userId, accessToken);
   }
 
-  @Get('/get-comments/:verifyStatus')
+  @Post('/get-comments/:verifyStatus')
   getComments(@Param('verifyStatus') verifyStatus: string, @Headers('Authorization') headers, @Query('sort') sort: string, @Body() commentIds: string[]) {
     let accessToken = "";
     if (headers)
