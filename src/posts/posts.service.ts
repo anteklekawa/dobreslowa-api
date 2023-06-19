@@ -414,7 +414,8 @@ export class PostsService {
 
           const commentsCount = await prisma.comments.count({
             where: {
-              postId: post.postId
+              postId: post.postId,
+              verifyStatus: "verified"
             }
           })
 
