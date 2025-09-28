@@ -5,7 +5,7 @@ A sophisticated NestJS backend for a social media platform with advanced content
 
 ## Technical Highlights
 
-### 🔐 Advanced Authentication System
+### 🔐 Authentication System
 - **JWT-like Token Management**: Custom access token implementation with SHA-256 hashing
 - **Automatic Token Expiration**: 10-minute session timeout with background cleanup
 - **Secure Password Handling**: bcrypt with 10 salt rounds for robust encryption
@@ -23,7 +23,7 @@ A sophisticated NestJS backend for a social media platform with advanced content
 - **Like/Unlike Functionality**: Atomic operations with anti-duplication safeguards
 - **Content Filtering**: Role-based visibility for sensitive content
 
-### 🎯 Advanced Features
+### 🎯 Features
 - **Role Hierarchy System**: 
   - Developer privileges (full access)
   - Administrator rights (content management)
@@ -34,7 +34,7 @@ A sophisticated NestJS backend for a social media platform with advanced content
 - **Data Integrity**: UUIDv4 for all entity identifiers
 - **Input Validation**: Class-validator DTOs with comprehensive sanitization
 
-## Professional Technical Implementation
+## Technical Implementation
 - **RESTful API Design**: Clean endpoint structure with proper HTTP methods
 - **Global Exception Handling**: Custom error responses with appropriate status codes
 - **CORS Configuration**: Secure cross-origin resource sharing
